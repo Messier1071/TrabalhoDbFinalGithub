@@ -1,0 +1,19 @@
+Diretório "Exemplos Básicos"
+
+	Apresenta exemplos simples/básicos de fontes em Python.
+
+exemplo_bd_relacional.ipynb
+
+	Exemplifica a conexão com os bancos Postgre e MySQL. No primeiro caso é necessário criar um Database com o nome 'bd'. Já para o 	MySQL é necessário criar um schema com o nome 'bd'.
+
+ResgateAnimais.py
+
+	Contém um exemplo mais próximo do que é solicitado no trabalho final. A conexão ocorre com o MySQL sendo necessária a criação de um schema chamado 'ong'.
+
+clustering_network_01.ipynb
+
+	Exemplo que utiliza embeddings de tuplas de um conjunto de dados para realizar agrupamento de dados (clustering), ou seja, um aprendizado não supervisionado.
+
+train.csv
+
+	Dataset utilizado no exemplo clustering_network_01.ipynb
