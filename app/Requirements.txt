@@ -1,2 +1,5 @@
 textual
 textual-dev
+mysql-connector
+mysql-connector-python
+python-dotenv

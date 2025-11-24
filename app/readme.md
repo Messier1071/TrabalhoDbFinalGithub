@@ -1,1 +1,1 @@
- pip install -r .\Requirements.txt
+pip install -r .\Requirements.txt
