@@ -2,6 +2,7 @@
 import os
 import mysql.connector
 from mysql.connector import errorcode
+from google.genai import Client
 
 from dotenv import load_dotenv
 
@@ -643,8 +644,61 @@ def crud_signal(connect):
     consulta1(connect)
     consulta2(connect)
     consulta3(connect)
-    
 
+def AI_assistance(connect):
+    select_query = """
+    SELECT
+    D.DepartmentCode,
+    D.Name AS DepartmentName,
+
+    -- total equipment per department
+    COUNT(DISTINCT EQ.idEquipment) AS TotalEquipments,
+
+    -- teams belonging to this department
+    GROUP_CONCAT(DISTINCT T.Name ORDER BY T.Name SEPARATOR ', ') AS TeamsInDepartment,
+
+    -- missions associated with those teams
+    GROUP_CONCAT(
+        DISTINCT CONCAT('Mission ', M.idMission, ' (Team ', T.Name, ')')
+        ORDER BY M.idMission SEPARATOR '; '
+    ) AS MissionsAssigned
+
+FROM Department D
+LEFT JOIN Employee EM ON EM.Department_DepartmentCode = D.DepartmentCode
+LEFT JOIN Team T ON T.idTeam = EM.Team_idTeam
+LEFT JOIN Equipment EQ ON EQ.Team_idTeam = T.idTeam
+LEFT JOIN Mission M ON M.Team_idTeam = T.idTeam
+
+    GROUP BY D.DepartmentCode, D.Name
+    ORDER BY TotalEquipments DESC;
+
+    """
+    print(
+        "\nTerceira Consulta: lista os departamentos que mais tem equipamentos pendente devolução e sua missão ativa"
+    )
+    cursor = connect.cursor()
+    cursor.execute(select_query)
+    myresult = cursor.fetchall()
+    qstring = ", ".join(str(item) for item in myresult)
+    AI_wrapper(qstring)
+
+def AI_wrapper(data):
+    
+    client = Client(api_key=os.environ["GEMINI_API_KEY"])
+
+    MissionDetails = input("detalhes: ")
+
+    RequestString = "taking into accout the mission is:" +MissionDetails+ "select four candidates from the following list"+ data
+    print(RequestString)
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-pro-preview",
+            contents=RequestString,
+        )
+        print(response)
+    except Exception as e:
+        print(f"\n\n\nAn unexpected error occurred: {e}")
+   
 
 # Main
 try:
@@ -662,7 +716,7 @@ try:
         6.  CONSULTA 01
         7.  CONSULTA 02
         8.  CONSULTA 03
-        9.  CONSULTA EXTRA DEPRECATED
+        9.  AI CONSULTANT
         10. CONSULTA TABELAS INDIVIDUAIS
         11. UPDATE VALUES 
         12. CLEAR ALL signal (works)
@@ -707,7 +761,7 @@ try:
             consulta3(con)
 
         if choice == 9:
-            print("")
+            AI_assistance(con)
 
         if choice == 10:
             show_table(con)
