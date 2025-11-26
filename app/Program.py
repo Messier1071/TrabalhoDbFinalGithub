@@ -2,7 +2,7 @@
 import os
 import mysql.connector
 from mysql.connector import errorcode
-from google.genai import Client
+# from google.genai import Client
 
 from dotenv import load_dotenv
 
@@ -138,8 +138,6 @@ ENGINE = InnoDB;"""
 ENGINE = InnoDB;"""
     ),
 }
-
-
 
 
 # Valores para serem inseridos no Banco de Dados
@@ -325,7 +323,7 @@ update = {
     SET completed = 1
     WHERE idMission = 1006;
     """
-    )
+    ),
 }
 
 # Valores para teste de delete
@@ -538,7 +536,6 @@ ORDER BY L.Name, MissionsByThisTeamHere DESC;
     """
     print(
         "Primeira Consulta: Lista os locais e quantas missões cada time realizou no mesmo "
-        
     )
     cursor = connect.cursor()
     cursor.execute(select_query)
@@ -627,7 +624,9 @@ def exit_db(connect):
 
 def crud_signal(connect):
     drop_all_tables(connect)
-    drop_all_tables(connect) # to make sure no foreignkeys got in the way, shouldnt cause an error since it's drop if exists
+    drop_all_tables(
+        connect
+    )  # to make sure no foreignkeys got in the way, shouldnt cause an error since it's drop if exists
     create_all_tables(connect)
     insert_test(connect)
 
@@ -635,7 +634,6 @@ def crud_signal(connect):
     consulta1(connect)
     consulta2(connect)
     consulta3(connect)
-    
 
     update_test(connect)
     delete_test(connect)
@@ -644,6 +642,7 @@ def crud_signal(connect):
     consulta1(connect)
     consulta2(connect)
     consulta3(connect)
+
 
 def AI_assistance(connect):
     select_query = """
@@ -673,106 +672,132 @@ LEFT JOIN Mission M ON M.Team_idTeam = T.idTeam
     ORDER BY TotalEquipments DESC;
 
     """
-    print(
-        "\nTerceira Consulta: lista os departamentos que mais tem equipamentos pendente devolução e sua missão ativa"
+    cursor = connect.cursor()
+    cursor.execute(select_query)
+    myresult = cursor.fetchall()
+    qstring = ", ".join(str(item) for item in myresult)
+    # AI_wrapper(qstring)
+
+
+def test(connect):
+    select_query = """
+    Select * from signal.department;
+    """
+    cursor = connect.cursor()
+    cursor.execute(select_query)
+    myresult = cursor.fetchall()
+    qstring = ", ".join(str(item) for item in myresult)
+    return myresult
+
+
+def GetCols(connect, TableName):
+    select_query = (
+        "select COLUMN_NAME from information_schema.COLUMNS where TABLE_NAME='"
+        + TableName
+        + "';"
     )
     cursor = connect.cursor()
     cursor.execute(select_query)
     myresult = cursor.fetchall()
     qstring = ", ".join(str(item) for item in myresult)
-    AI_wrapper(qstring)
+    return myresult
 
-def AI_wrapper(data):
-    
-    client = Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    MissionDetails = input("detalhes: ")
+# def AI_wrapper(data):
+#     client = Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    RequestString = "taking into accout the mission is:" +MissionDetails+ "select four candidates from the following list"+ data
-    print(RequestString)
-    try:
-        response = client.models.generate_content(
-            model="gemini-3-pro-preview",
-            contents=RequestString,
-        )
-        print(response)
-    except Exception as e:
-        print(f"\n\n\nAn unexpected error occurred: {e}")
-   
+#     MissionDetails = input("detalhes: ")
+
+#     RequestString = (
+#         "taking into accout the mission is:"
+#         + MissionDetails
+#         + "select four candidates from the following list"
+#         + data
+#     )
+#     print(RequestString)
+#     try:
+#         response = client.models.generate_content(
+#             model="gemini-3-pro-preview",
+#             contents=RequestString,
+#         )
+#         print(response)
+#     except Exception as e:
+#         print(f"\n\n\nAn unexpected error occurred: {e}")
+
 
 # Main
-try:
-    # Estabelece Conexão com o DB
-    con = connect_signal()
+# try:
+#     # Estabelece Conexão com o DB
+#     con = connect_signal()
 
-    power_up = 1
-    while power_up == 1:
-        interface = """\n       ---MENU---
-        1.  CRUD signal
-        2.  TESTE - Create all tables (works)
-        3.  TESTE - Insert all values (works)
-        4.  TESTE - Update (works)
-        5.  TESTE - Delete (works)
-        6.  CONSULTA 01
-        7.  CONSULTA 02
-        8.  CONSULTA 03
-        9.  AI CONSULTANT
-        10. CONSULTA TABELAS INDIVIDUAIS
-        11. UPDATE VALUES 
-        12. CLEAR ALL signal (works)
-        0.  DISCONNECT DB\n """
-        print(interface)
+#     power_up = 1
+#     while power_up == 1:
+#         interface = """\n       ---MENU---
+#         1.  CRUD signal
+#         2.  TESTE - Create all tables (works)
+#         3.  TESTE - Insert all values (works)
+#         4.  TESTE - Update (works)
+#         5.  TESTE - Delete (works)
+#         6.  CONSULTA 01
+#         7.  CONSULTA 02
+#         8.  CONSULTA 03
+#         9.  AI CONSULTANT
+#         10. CONSULTA TABELAS INDIVIDUAIS
+#         11. UPDATE VALUES
+#         12. CLEAR ALL signal (works)
+#         0.  DISCONNECT DB\n """
+#         print(interface)
 
-        choice = int(input("Opção: "))
-        if choice < 0 or choice > 12:
-            print("Erro tente novamente!")
-            choice = int(input())
+#         choice = int(input("Opção: "))
+#         if choice < 0 or choice > 12:
+#             print("Erro tente novamente!")
+#             choice = int(input())
 
-        if choice == 0:
-            if con.is_connected():
-                exit_db(con)
-                print("Muito obrigada(o).")
-                break
-            else:
-                break
+#         if choice == 0:
+#             if con.is_connected():
+#                 exit_db(con)
+#                 print("Muito obrigada(o).")
+#                 break
+#             else:
+#                 break
 
-        if choice == 1:
-            crud_signal(con)
+#         if choice == 1:
+#             crud_signal(con)
 
-        if choice == 2:
-            create_all_tables(con)
+#         if choice == 2:
+#             create_all_tables(con)
 
-        if choice == 3:
-            insert_test(con)
+#         if choice == 3:
+#             insert_test(con)
 
-        if choice == 4:
-            update_test(con)
+#         if choice == 4:
+#             update_test(con)
 
-        if choice == 5:
-            delete_test(con)
+#         if choice == 5:
+#             delete_test(con)
 
-        if choice == 6:
-            consulta1(con)
+#         if choice == 6:
+#             consulta1(con)
 
-        if choice == 7:
-            consulta2(con)
+#         if choice == 7:
+#             consulta2(con)
 
-        if choice == 8:
-            consulta3(con)
+#         if choice == 8:
+#             consulta3(con)
 
-        if choice == 9:
-            AI_assistance(con)
+#         if choice == 9:
+#             AI_assistance(con)
 
-        if choice == 10:
-            show_table(con)
+#         if choice == 10:
+#             show_table(con)
 
-        if choice == 11:
-            update_value(con)
+#         if choice == 11:
+#             update_value(con)
 
-        if choice == 12:
-            drop_all_tables(con)
+#         if choice == 12:
+#             drop_all_tables(con)
 
-    con.close()
+#     con.close()
 
-except mysql.connector.Error as err:
-    print("Erro na conexão com o banco de dados!", err.msg)
+# except mysql.connector.Error as err:
+#     print("Erro na conexão com o banco de dados!", err.msg)
