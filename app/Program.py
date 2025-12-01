@@ -140,8 +140,6 @@ ENGINE = InnoDB;"""
 }
 
 
-
-
 # Valores para serem inseridos no Banco de Dados
 inserts = {
     "USER": (
@@ -325,7 +323,7 @@ update = {
     SET completed = 1
     WHERE idMission = 1006;
     """
-    )
+    ),
 }
 
 # Valores para teste de delete
@@ -444,14 +442,19 @@ def update_value(connect):
             name,
             " SET ",
             atributo,
-            " = ",
+            ' = "',
             valor,
-            " WHERE ",
+            '" WHERE ',
             codigo_f,
-            "= ",
+            '= "',
             codigo,
+            '"',
         ]
+
+        ## UPDATE department SET Name = "new_value2" WHERE DepartmentCode = "DEP01";
+
         sql = "".join(query)
+        print(sql)
         cursor.execute(sql)
     except mysql.connector.Error as err:
         print(err.msg)
@@ -538,7 +541,6 @@ ORDER BY L.Name, MissionsByThisTeamHere DESC;
     """
     print(
         "Primeira Consulta: Lista os locais e quantas missões cada time realizou no mesmo "
-        
     )
     cursor = connect.cursor()
     cursor.execute(select_query)
@@ -627,7 +629,9 @@ def exit_db(connect):
 
 def crud_signal(connect):
     drop_all_tables(connect)
-    drop_all_tables(connect) # to make sure no foreignkeys got in the way, shouldnt cause an error since it's drop if exists
+    drop_all_tables(
+        connect
+    )  # to make sure no foreignkeys got in the way, shouldnt cause an error since it's drop if exists
     create_all_tables(connect)
     insert_test(connect)
 
@@ -635,7 +639,6 @@ def crud_signal(connect):
     consulta1(connect)
     consulta2(connect)
     consulta3(connect)
-    
 
     update_test(connect)
     delete_test(connect)
@@ -644,6 +647,7 @@ def crud_signal(connect):
     consulta1(connect)
     consulta2(connect)
     consulta3(connect)
+
 
 def AI_assistance(connect):
     select_query = """
@@ -682,23 +686,28 @@ LEFT JOIN Mission M ON M.Team_idTeam = T.idTeam
     qstring = ", ".join(str(item) for item in myresult)
     AI_wrapper(qstring)
 
+
 def AI_wrapper(data):
-    
-    client = Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = Client(api_key=os.environ["GEMINI_KEY"])
 
     MissionDetails = input("detalhes: ")
 
-    RequestString = "taking into accout the mission is:" +MissionDetails+ "select four candidates from the following list"+ data
+    RequestString = (
+        "taking into accout the mission is:"
+        + MissionDetails
+        + "select four candidates from the following list"
+        + data
+    )
     print(RequestString)
     try:
         response = client.models.generate_content(
-            model="gemini-3-pro-preview",
+            model=os.environ["GEMINI_MODEL"],
             contents=RequestString,
         )
         print(response)
     except Exception as e:
         print(f"\n\n\nAn unexpected error occurred: {e}")
-   
+
 
 # Main
 try:
@@ -770,6 +779,7 @@ try:
             update_value(con)
 
         if choice == 12:
+            drop_all_tables(con)
             drop_all_tables(con)
 
     con.close()
